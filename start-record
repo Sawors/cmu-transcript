@@ -103,7 +103,8 @@ log_info() {
 }
 
 start_record() {
-	echo "$(get_log_timestamp) valid media found, beginning to record..."
+	track=$(playerctl --player=$player metadata --format "{{ title }}")
+	echo "$(get_log_timestamp) valid media found, beginning to record $track")
 	# wait until the media gets resumed to beggin recording
 	if [[ $(get_player_status) == "Paused" ]]; then
 		echo "$(get_log_timestamp) waiting for the media to be resumed..."
@@ -113,7 +114,6 @@ start_record() {
 		done
 	fi
 
-	track=$(playerctl --player=$player metadata --format "{{ title }}")
 	timestamp=$(date "+${name_timestamp_format}")
 	file_name="${timestamp}_$(echo ${track//\ /-} | sed 's/[^0-9A-Za-z_)()-]*//g').${file_format}"
 	
@@ -149,7 +149,7 @@ start_record() {
 	done
 
 	if [[ $(date "+%s") -ge $end_epoch ]]; then
-		echo "time frame exceeded, cutting recording... (this is normal)"
+		echo "$(get_log_timestamp) time frame exceeded, cutting recording... (this is normal)"
 	fi
 	
 	kill -TERM $pid
