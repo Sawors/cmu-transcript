@@ -51,7 +51,8 @@ player="firefox"
 player_record_name="Firefox"
 
 # Tries to record for this amount of minutes. The recording will
-# persist for this amount of minutes unless interrupted
+# persist for this amount of minutes unless interrupted.
+# Set this to a very high value (like 10000) to virtually disable this feature
 time_frame_minutes=50
 
 # Checks each N seconds if the media player is currently playing
