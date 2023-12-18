@@ -6,6 +6,17 @@
 
 # Takes the file to analyze as its first argument.
 
+# By default, the trimmed audio is not saved. To save it,
+# use the -s or --save parameter after the audio file path to
+# save the trimmed audio (it allows for faster successive
+# transcriptions of the same audio file).
+
+# If a cached trimmed audio is found, the script will attempt
+# to use it instead of trimming the audio again. To avoid this
+# behaviour, use the parameter --no-cache or -c. This completely
+# negates the advantage of saving the audio with --save (at least
+# for this program).
+
 file=$1
 
 if ! test -f "$file"; then
@@ -15,10 +26,17 @@ if ! test -f "$file"; then
 fi
 
 save_trimmed=false
+use_cache=true
+trimmed_cache_file="data/trimmed/$file_name"
 
 if [[ "$@" == *"--save"* || "$@" == *"-s"* ]]; then
 	save_trimmed=true
 fi
+
+if [[ "$@" == *"--no-cache"* || "$@" == *"-c"* ]]; then
+	use_cache=false
+fi
+
 
 output=""
 file_name=$(basename -- "$file")
@@ -28,13 +46,19 @@ echo $file_name
 if [[ $save_trimmed = false ]]; then
 	output="/tmp/$trimmed_name"
 else
-	output="data/trimmed/$file_name"
+	output=$trimmed_cache_file
 fi
 
-echo "trimmed file will be saved as $output"
-echo "trimming audio file..."
-./src/trim-audio.py "$file" "$output"
-echo "trimming of audio file done!"
+if test -f trimmed_cache_file && [[ $use_cache = true ]]; then
+	echo "trimmed audio found in cache, ignoring trimming process..."
+	echo "using the cached file $output for the transcription process"
+	output=$trimmed_cache_file
+else
+	echo "trimmed file will be saved as $output"
+	echo "trimming audio file..."
+	./src/trim-audio.py "$file" "$output"
+	echo "trimming of audio file done!"
+fi
 
 echo "transcripting audio..."
 ./src/transcript.py "$output"
