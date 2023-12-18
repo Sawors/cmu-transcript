@@ -4,9 +4,11 @@
 
 ##################################################
 
-# Defines how much time does an analysis frame covers.
+# Defines how much time does an analysis frame covers (in seconds).
 # These frames are used for sound analysis as a simplification of the actual sound frames
 # to lower the data actually being stored in RAM.
+# If you want maximum precision, set this to 1/sample_rate
+# (ususally 1/44100)
 visual_frame_duration=1/2
 
 # Defines how much time ahead should the program look 

@@ -70,6 +70,11 @@ warning_message ="""
  
 """
 
+# If set to true, the output of the transcription will be formatted
+# to be more readable and comparable
+pretty_output=True
+pretty_line_length=80
+
 # FOR THE WHISPER API ONLY
 # The prompt that will be submited to the model before the speech recognition
 # begins. Used to give some context or special vocabulary.
@@ -104,6 +109,9 @@ for arg in argv:
         model_name=payload
     elif "--output=" in arg:
         output_dir=payload
+    elif arg == "--raw" or arg == "-r":
+        pretty_output=False
+        
 
 print(f"using the {transcription_api} api with the {model_name} model")
 
@@ -111,10 +119,6 @@ file_name = input_file[input_file.rfind("/")+1:min(input_file.rfind("."),len(inp
 subject=file_name[file_name.find('_')+1:file_name.rfind('_')].replace("BA1-Med","").replace("-"," ")
 whisper_initial_prompt=whisper_initial_prompt.format(subject)
 output_file = f"{output_dir}/{transcription_api}.{model_name}.{file_name}.txt"
-
-
-with open(output_file, "w") as out:
-    out.write(warning_message)
 
 def check_model_presence(model_list:list, print_error:True) -> bool:
     if model_name in model_list:
@@ -166,7 +170,8 @@ if transcription_api == "vosk":
         "-f", "s16le",
         "-"
     ]
-    text_data=""
+    raw_text=""
+    text=""
     with subprocess.Popen(command, stdout=subprocess.PIPE) as proc:
         while True:
             # Why precisely 4000 ? Only god (and the guy on stackoverflow) knows...
@@ -178,12 +183,25 @@ if transcription_api == "vosk":
                 result = rec.Result()
                 content = result[result.rfind(": \"")+3:result.rfind("\"")]
                 print(content)
-                #text_data += content+"\n"
-                with open(output_file, "a") as out:
-                    out.write(content+"\n")
+                raw_text += content+" "
             else:
                 #print(rec.PartialResult())
                 pass
+
+    cut_signal=False
+    if pretty_output:
+        for index,char in enumerate(text):
+            if index%pretty_line_length == 0 and index > 0:
+                cut_signal = True
+            if cut_signal == True and not char.isalnum():
+                cut_signal = False
+                text += char+"\n"
+    else:
+        text = raw_text
+    
+    with open(output_file, "w") as out:
+        out.write(warning_message+"\n"+text)
+
 elif transcription_api == "whisper":
     import whisper
     
@@ -199,15 +217,28 @@ elif transcription_api == "whisper":
                                 initial_prompt=whisper_initial_prompt, 
                                 language=language
                                 )
-    text = result["text"]
+    raw_text = result["text"]
+    text = ""
     print("transcription done!")
     print("writting to file...")
     print(result.keys())
 
-    with open(output_file, "a") as out:
-        out.write(text.replace(".",".\n"))
-    
-else:
-    print(f"ERROR: please specify a valid speech recognition api (api [{transcription_api}] not recognized)")   
+    cut_signal=False
+    if pretty_output:
+        for index,char in enumerate(text):
+            if index%pretty_line_length == 0 and index > 0:
+                cut_signal = True
+            if cut_signal == True and not char.isalnum():
+                cut_signal = False
+                text += char+"\n"       
+    else:
+        text = raw_text
 
+    with open(output_file, "w") as out:
+        out.write(warning_message+"\n"+text)
+
+
+else:
+    print(f"ERROR: please specify a valid speech recognition api (api \'{transcription_api}\' not recognized)")   
+    exit()
 print(f"everything save and finished, transcription is saved as {output_file}")
