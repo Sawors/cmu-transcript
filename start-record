@@ -26,6 +26,7 @@
 base_probe_interval_seconds=10
 
 # At which hour should this script automatically stop.
+# Set this to a value higher than 24 to disable this feature.
 cutoff_hour=19
 
 # If one of these identifiers is present in the title
