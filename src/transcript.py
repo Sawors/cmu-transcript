@@ -22,6 +22,10 @@
 # --language=language_code  The language of the speech in the audio file, in its short form (fr, en, jp).
 
 ##################################################
+import tempfile
+import subprocess
+from sys import argv
+import os
 
 # Please consider that any data provided as arguments to the script
 # will override the variables defined here.
@@ -45,7 +49,7 @@ language="fr"
 # - large (NOT RECOMMENDED, VERY HEAVY TO USE)
 model_name="vosk-model-fr-0.22"
 
-output_dir="transcripts"
+output_dir=f"{os.path.dirname(os.path.dirname(os.path.realpath(sys.argv[0])))}/{output_dir}"
 
 # "vosk" or "whisper"
 transcription_api="vosk"
@@ -81,10 +85,6 @@ pretty_line_length=80
 whisper_initial_prompt = "L'audio à transcrire est un cours de niveau universitaire en médecine. Il couvre des sujets généraux de médecine, et comporte un vocabulaire technique de médecine et de sciences biomédicales. Le sujet du cours est {}. La retranscription se fait en français."
 
 ##################################################
-import tempfile
-import subprocess
-from sys import argv
-import os
 
 if not os.access(output_dir, os.W_OK):
     print(f"ERROR: cannot access output directory (./{output_dir})")

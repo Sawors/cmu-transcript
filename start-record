@@ -36,7 +36,7 @@ title_identifiers=( "BA1 Med" "BA1_Med" "Statistiques pour médecins" )
 
 # The directory in which all the data will be saved,
 # can be relative or absolute.
-save_directory="data"
+save_directory="$(dirname "$0")/data"
 
 # The exetension of the file.
 file_format="ogg"
@@ -106,7 +106,7 @@ log_info() {
 
 start_record() {
 	track=$(playerctl --player=$player metadata --format "{{ title }}")
-	echo "$(get_log_timestamp) valid media found, beginning to record $track")
+	echo "$(get_log_timestamp) valid media found, beginning to record $track"
 	# wait until the media gets resumed to beggin recording
 	if [[ $(get_player_status) == "Paused" ]]; then
 		echo "$(get_log_timestamp) waiting for the media to be resumed..."
